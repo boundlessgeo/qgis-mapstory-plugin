@@ -11,6 +11,7 @@ from qgis.utils import iface
 from dateutil import parser
 from collections import defaultdict, OrderedDict
 import time
+import datetime
 
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
@@ -24,6 +25,8 @@ backIcon = icon("back.png")
 forwardIcon = icon("forward.png")
 playIcon = icon("play.png")
 
+INSTANT, CUMULATIVE = 0, 1
+
 class AnimationWidget(BASE, WIDGET):
 
     def __init__(self):
@@ -34,6 +37,7 @@ class AnimationWidget(BASE, WIDGET):
         self.layer = None
         self.field = None
         self.animating = False
+        self.mode = INSTANT
 
         self.setupUi(self)
 
@@ -47,7 +51,11 @@ class AnimationWidget(BASE, WIDGET):
 
         self.closeButton.clicked.connect(self.closeClicked)
         self.timeSlider.valueChanged.connect(self.valueChanged)
+        self.comboMode.currentIndexChanged.connect(self.modeChanged)
 
+    def modeChanged(self):
+        self.mode = self.comboMode.currentIndex()
+        self.valueChanged(self.timeSlider.value())
 
     def toggleAnimation(self):
         self.animating = not self.animating
@@ -77,10 +85,17 @@ class AnimationWidget(BASE, WIDGET):
 
     def valueChanged(self, val):
         idx = min(next(i for i,v in enumerate(self.times.keys()) if v >= val), len(self.times) -1)
-        subsetString = "$id IN (%s)" % ",".join(self.times.values()[idx])
+
+        fids = self.times.values()[idx]
+        if self.mode == CUMULATIVE:
+            for i in range(idx):
+                fids.extend(self.times.values()[i])
+
+        subsetString = "$id IN (%s)" % ",".join(fids)
         self.layer.setSubsetString(subsetString)
         iface.mapCanvas().refresh()
-        self.labelCurrent.setText(time.ctime(int(val)))
+        dt = datetime.datetime(1, 1, 1) + datetime.timedelta(milliseconds=val * 3600 * 1000)
+        self.labelCurrent.setText(unicode(dt.replace(microsecond=0)))
 
 
     def setLayer(self, layer, fieldname):
@@ -90,16 +105,19 @@ class AnimationWidget(BASE, WIDGET):
         for feat in layer.getFeatures():
             feattime = feat[self.fieldname]
             dt = parser.parse(feattime)
-            secs = time.mktime(dt.timetuple())
-            times[int(secs)].append(str(feat.id()))
+            h = (dt - datetime.datetime(1,1,1)).total_seconds() / 3600
+            times[int(h)].append(str(feat.id()))
 
         self.times = OrderedDict(sorted(times.items()))
 
+        self.timeSlider.blockSignals(True)
         self.timeSlider.setMinimum(self.times.keys()[0])
         self.timeSlider.setMaximum(self.times.keys()[-1])
+        self.timeSlider.blockSignals(False)
         self.timeSlider.setValue(self.times.keys()[0])
+        self.valueChanged(self.times.keys()[0])
+        self.step = int((self.timeSlider.maximum() - self.timeSlider.minimum()) / 50)
 
-        self.step = (self.timeSlider.maximum() - self.timeSlider.minimum()) / 50
 
     def closeClicked(self):
         self.layer.setSubsetString("")

@@ -11,12 +11,14 @@ class Story():
 
     def __init__(self, storydef):
         self.storydef = storydef
-
-    def storyLayers(self):
         layers = [lay for lay in self.storydef["map"]["layers"] if "capability" in lay]
         for layer in layers:
             layer["source"] = self.storydef["sources"][layer["source"]]
-        return [StoryLayer(layer) for layer in layers]
+        self._layers = [StoryLayer(layer) for layer in layers]
+
+    def storyLayers(self):
+        return self._layers
+
 
     def description(self):
         filename = resourceFile("storydescriptiontemplate.html")

@@ -9,7 +9,7 @@ from qgis.core import *
 from qgis.gui import *
 from qgis.utils import iface
 import sys
-from mapstory.tools.utils import resourceFile
+from mapstory.tools.utils import *
 from PyQt4.QtGui import QTreeWidgetItem
 from mapstory.tools.story import Story
 from mapstory.gui.executor import execute
@@ -42,7 +42,7 @@ class MapStoryExplorer(BASE, WIDGET):
     def __init__(self):
         super(MapStoryExplorer, self).__init__(None)
 
-        self.currentStory = None
+        self.story = None
         self.currentLayerItem = None
         self.setupUi(self)
 
@@ -78,7 +78,47 @@ class MapStoryExplorer(BASE, WIDGET):
                 else:
                     self.updateCurrentStory(story)
         elif url == "download":
-            pass
+            outDir = QtGui.QFileDialog.getExistingDirectory(self,
+                                                  self.tr("Select output directory"),
+                                                  "."
+                                                 )
+            if not outDir:
+                return
+
+            QtCore.QDir().mkpath(outDir)
+
+            settings = QtCore.QSettings()
+            systemEncoding = settings.value('/UI/encoding', 'System')
+            startProgressBar(len(self.story.storyLayers()), "Download layers for off-line use:")
+            for i, layer in enumerate(self.story.storyLayers()):
+                filename = os.path.join(outDir, layer.name() + ".shp")
+                uri = "%s?srsname=%s&typename=%s&version=1.0.0&request=GetFeature&service=WFS" % (layer.wfsUrl(), layer.crs(), layer.name())
+                qgslayer = QgsVectorLayer(uri, layer.name(), "WFS")
+                writer = QgsVectorFileWriter(filename, systemEncoding,
+                                             qgslayer.pendingFields(),
+                                             qgslayer.dataProvider().geometryType(),
+                                             qgslayer.crs())
+                for feat in qgslayer.getFeatures():
+                    writer.addFeature(feat)
+                del writer
+
+                fieldname = self._getTimeField(qgslayer)
+
+                if fieldname is not None:
+                    filename = os.path.join(outDir, layer.name() + ".timefield")
+                    with open(filename, "w") as f:
+                        f.write(fieldname)
+                setProgress(i+1)
+
+            closeProgressBar()
+            iface.messageBar().pushMessage("MapStory", "Layers have been correctly saved as QGIS project.", level=QgsMessageBar.INFO, duration=3)
+
+
+    def _getTimeField(self, layer):
+        fields = layer.pendingFields()
+        for f in fields:
+            if f.typeName() == "xsd:dateTime":
+                return f.name()
 
     def layerDescriptionLinkClicked(self, url):
         url = url.toString()
@@ -97,12 +137,7 @@ class MapStoryExplorer(BASE, WIDGET):
                 if not qgslayer.isValid():
                     raise Exception ("Layer at %s is not a valid layer" % uri)
 
-                fieldname = None
-                fields = qgslayer.pendingFields()
-                for f in fields:
-                    if f.typeName() == "xsd:dateTime":
-                        fieldname = f.name()
-                        break
+                fieldname = self._getTimeField(qgslayer)
 
                 if fieldname is None:
                     QgsMapLayerRegistry.instance().addMapLayers([qgslayer])
@@ -141,21 +176,6 @@ class MapStoryExplorer(BASE, WIDGET):
         self.layersTree.addTopLevelItem(self.layersItem)
 
         self.layersItem.setExpanded(True)
-
-
-
-    def showRepoTreePopupMenu(self, point):
-        item = self.repoTree.selectedItems()[0]
-        if isinstance(item, RepoItem):
-            menu = QtGui.QMenu()
-            addAction = QtGui.QAction(addIcon, "Add layer to repository...", None)
-            addAction.triggered.connect(self.addLayer)
-            menu.addAction(addAction)
-            deleteAction = QtGui.QAction(deleteIcon, "Remove this repository", None)
-            deleteAction.triggered.connect(lambda: self.deleteRepo(item))
-            menu.addAction(deleteAction)
-            point = self.repoTree.mapToGlobal(point)
-            menu.exec_(point)
 
 
     def treeItemClicked(self, item, i):

@@ -42,8 +42,8 @@ def execute(func, message = None, useThread = False):
             t.finished.connect(loop.exit, QtCore.Qt.QueuedConnection)
             if _dialog is None:
                 dialogCreated = True
-                _dialog = QtGui.QProgressDialog(message, "GeoGig", 0, 0, config.iface.mainWindow())
-                _dialog.setWindowTitle("GeoGig")
+                _dialog = QtGui.QProgressDialog(message, "Mapstory", 0, 0, config.iface.mainWindow())
+                _dialog.setWindowTitle("Mapstory")
                 _dialog.setWindowModality(QtCore.Qt.WindowModal);
                 _dialog.setMinimumDuration(1000)
                 _dialog.setMaximum(100)
