@@ -18,9 +18,9 @@ import zipfile
 options(
     plugin = Bunch(
         name = 'mapstory',
-        ext_libs = path('src/mapstory/ext-libs'),
-        ext_src = path('src/mapstory/ext-src'),
-        source_dir = path('src/mapstory'),
+        ext_libs = path('mapstory/ext-libs'),
+        ext_src = path('mapstory/ext-src'),
+        source_dir = path('mapstory'),
         package_dir = path('.'),
         tests = ['test', 'tests'],
         excludes = [
