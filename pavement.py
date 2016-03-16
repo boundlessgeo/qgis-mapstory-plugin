@@ -95,7 +95,7 @@ def read_requirements():
 def install(options):
     '''install plugin to qgis'''
     plugin_name = options.plugin.name
-    src = path(__file__).dirname() / 'src' / plugin_name
+    src = path(__file__).dirname() / plugin_name
     dst = path('~').expanduser() / '.qgis2' / 'python' / 'plugins' / plugin_name
     src = src.abspath()
     dst = dst.abspath()
@@ -136,6 +136,8 @@ def make_zip(zip, options):
     cfg.write(buf)
     zip.writestr("mapstory/metadata.txt", buf.getvalue())
 
+    options.plugin.excludes.append("metadata.txt")
+
     excludes = set(options.plugin.excludes)
 
     src_dir = options.plugin.source_dir
@@ -152,7 +154,7 @@ def make_zip(zip, options):
 
     for root, dirs, files in os.walk(src_dir):
         for f in filter_excludes(files):
-            relpath = os.path.relpath(root, 'src')
+            relpath = os.path.relpath(root, '.')
             zip.write(path(root) / f, path(relpath) / f)
         filter_excludes(dirs)
 
