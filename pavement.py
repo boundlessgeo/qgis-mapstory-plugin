@@ -22,13 +22,9 @@ options(
         ext_src = path('src/mapstory/ext-src'),
         source_dir = path('src/mapstory'),
         package_dir = path('.'),
-        tests = ['test'],
+        tests = ['test', 'tests'],
         excludes = [
-            'metadata.*',
-            'test-output',
             'ext-src',
-            'coverage*.*',
-            'nose*.*',
             '*.pyc'
         ]
     ),
