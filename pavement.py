@@ -24,6 +24,7 @@ options(
         package_dir = path('.'),
         tests = ['test', 'tests'],
         excludes = [
+            'metadata.txt',
             'ext-src',
             '*.pyc'
         ]
@@ -135,8 +136,6 @@ def make_zip(zip, options):
     buf = StringIO()
     cfg.write(buf)
     zip.writestr("mapstory/metadata.txt", buf.getvalue())
-
-    options.plugin.excludes.append("metadata.txt")
 
     excludes = set(options.plugin.excludes)
 
