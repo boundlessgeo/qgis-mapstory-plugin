@@ -14,6 +14,7 @@ from PyQt4.QtGui import QTreeWidgetItem
 from mapstory.tools.story import Story
 from mapstory.gui.executor import execute
 from mapstory.tools.animation import addAnimation
+from mapstory.gui.searchdialog import SearchDialog
 
 def icon(f):
     return QtGui.QIcon(os.path.join(os.path.dirname(__file__), os.pardir, "resources", f))
@@ -70,9 +71,10 @@ class MapStoryExplorer(BASE, WIDGET):
     def storyDescriptionLinkClicked(self, url):
         url = url.toString()
         if url == "search":
-            text, ok = QtGui.QInputDialog.getText(self, 'Set story', 'Enter story number id:')
-            if ok:
-                story = Story.storyFromNumberId(text)
+            dlg = SearchDialog()
+            dlg.exec_()
+            if dlg.mapstory is not None:
+                story = Story.storyFromNumberId(dlg.mapstory)
                 if story is None:
                     QtGui.QMessageBox.warning(iface.mainWindow(), "MapStory", "Cannot get MapStory data.\nCheck that the provided ID is correct.")
                 else:
