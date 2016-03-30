@@ -57,7 +57,10 @@ class StoryLayer():
         return self.layerdef["name"]
 
     def wmsUrl(self):
-        return self.layerdef["source"]["url"]
+        url = self.layerdef["source"]["url"]
+        if not url.startswith("http://mapstory.org"):
+            url = "http://mapstory.org" + url
+        return url
 
     def wfsUrl(self):
         return self.wmsUrl().replace("/wms", "/wfs")
