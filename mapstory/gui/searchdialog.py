@@ -4,12 +4,14 @@ from qgis.gui import *
 from qgis.utils import iface
 import os
 from requests.exceptions import RequestException
+import requests
+from mapstory.tools.utils import resourceFile
+from mapstory.gui.executor import execute
 
 class SearchDialog(QtGui.QDialog):
 
     def __init__(self):
         super(SearchDialog, self).__init__(iface.mainWindow())
-        self.navigator = navigator
         self.initGui()
         self.mapstory = None
 
@@ -54,7 +56,7 @@ class SearchDialog(QtGui.QDialog):
         text = self.searchBox.text().strip()
         if text:
             try:
-                r = requests.get("http://mapstory.org/api/maps", params={"limit":50, "q": text})
+                r = execute(lambda: requests.get("http://beta.mapstory.org/api/base/search", params={"type__in":"map", "limit":50, "q": text}))
                 r.raise_for_status()
                 mapstories = r.json()["objects"]
                 if mapstories:
