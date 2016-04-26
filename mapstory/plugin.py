@@ -18,13 +18,12 @@ class MapStoryPlugin:
         iface.initializationCompleted.connect(lambda: animationWidgetInstance.setVisible(False))
 
     def unload(self):
-        exlorerInstance.setVisible(False)
+        explorerInstance.setVisible(False)
         del self.explorerAction
         animationWidgetInstance.setVisible(False)
         del self.animationWidgetInstance
 
     def initGui(self):
-
         icon = QtGui.QIcon(os.path.dirname(__file__) + "/ui/resources/mapstory.png")
         self.explorerAction = explorerInstance.toggleViewAction()
         self.explorerAction.setIcon(icon)
