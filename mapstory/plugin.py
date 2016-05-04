@@ -19,7 +19,7 @@ class MapStoryPlugin:
 
     def unload(self):
         explorerInstance.setVisible(False)
-        del self.explorerAction
+        del explorerInstance
         animationWidgetInstance.setVisible(False)
         del self.animationWidgetInstance
 
