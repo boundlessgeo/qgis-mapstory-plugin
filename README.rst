@@ -1,10 +1,14 @@
-QGIS MapStory plugin
-==============================
+MapStory
+========
 
+The MapStory plugin for QGIS.
 
+Documentation
+-------------
+The plugin is documented `here <http://boundlessgeo.github.io/qgis-mapstory-plugin>`_
 
 Cloning this repository
-=======================
+-----------------------
 
 This repository uses external repositories as submodules. Therefore in order to include the external repositories during cloning you should use the *--recursive* option:
 
