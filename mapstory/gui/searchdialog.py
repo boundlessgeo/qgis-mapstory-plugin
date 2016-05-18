@@ -22,7 +22,7 @@ class SearchDialog(QtGui.QDialog):
         self.searchBox.returnPressed.connect(self.search)
         self.searchBox.setPlaceholderText("[Enter search string and press enter to search for maps]")
         hlayout.addWidget(self.searchBox)
-    
+
         self.button = QtGui.QToolButton()
         self.button.setText("Search")
         self.button.clicked.connect(self.search)
@@ -56,7 +56,7 @@ class SearchDialog(QtGui.QDialog):
         text = self.searchBox.text().strip()
         if text:
             try:
-                r = execute(lambda: requests.get("http://beta.mapstory.org/api/base/search", params={"type__in":"map", "limit":50, "q": text}))
+                r = execute(lambda: requests.get("http://mapstory.org/api/base/search", params={"type__in":"map", "limit":50, "q": text}))
                 r.raise_for_status()
                 mapstories = r.json()["objects"]
                 if mapstories:
