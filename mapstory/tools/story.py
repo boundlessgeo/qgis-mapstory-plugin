@@ -4,8 +4,8 @@
 # This code is licensed under the GPL 2.0 license.
 #
 from mapstory.tools.utils import resourceFile
-import requests
 from mapstory.gui.executor import execute
+import requests
 
 class Story():
 

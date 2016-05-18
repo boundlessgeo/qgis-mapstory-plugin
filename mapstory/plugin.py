@@ -15,13 +15,12 @@ class MapStoryPlugin:
             addTestModule(testerplugin, "MapStory")
         except:
             pass
-        iface.initializationCompleted.connect(lambda: animationWidgetInstance.setVisible(False))
 
     def unload(self):
         explorerInstance.setVisible(False)
         del explorerInstance
         animationWidgetInstance.setVisible(False)
-        del self.animationWidgetInstance
+        del animationWidgetInstance
 
     def initGui(self):
         icon = QtGui.QIcon(os.path.dirname(__file__) + "/ui/resources/mapstory.png")
@@ -31,7 +30,6 @@ class MapStoryPlugin:
         self.iface.addPluginToMenu(u"&MapStory", self.explorerAction)
 
         self.iface.addDockWidget(QtCore.Qt.RightDockWidgetArea, explorerInstance)
-        self.iface.addDockWidget(QtCore.Qt.TopDockWidgetArea, animationWidgetInstance)
 
 
 

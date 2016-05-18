@@ -5,7 +5,7 @@
 #
 from qgis.core import *
 from qgis.utils import iface
-from PyQt4 import QtGui
+from PyQt4 import QtGui, QtCore
 from mapstory.gui.animation import animationWidgetInstance
 
 def addAnimation(layer, field):
@@ -14,6 +14,11 @@ def addAnimation(layer, field):
     iface.legendInterface().addLegendLayerActionForLayer(animateAction, layer)
     animateAction.triggered.connect(lambda: animateLayer(layer, field))
 
+animationWidget = None
 def animateLayer(layer, field):
-    animationWidgetInstance.setVisible(True)
-    animationWidgetInstance.setLayer(layer, field)
+    global animationWidget
+    if animationWidget is None:
+        animationWidget = animationWidgetInstance
+        iface.addDockWidget(QtCore.Qt.TopDockWidgetArea, animationWidget)
+    animationWidget.setVisible(True)
+    animationWidget.setLayer(layer, field)
