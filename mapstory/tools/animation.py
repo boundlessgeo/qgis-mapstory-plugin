@@ -8,17 +8,32 @@ from qgis.utils import iface
 from PyQt4 import QtGui, QtCore
 from mapstory.gui.animation import animationWidgetInstance
 
-def addAnimation(layer, field):
+def addWfsAnimation(layer, field):
     animateAction = QtGui.QAction(u"Animate layer", iface.legendInterface())
     iface.legendInterface().addLegendLayerAction(animateAction, u"MapStory", u"id1", QgsMapLayer.VectorLayer, False)
     iface.legendInterface().addLegendLayerActionForLayer(animateAction, layer)
-    animateAction.triggered.connect(lambda: animateLayer(layer, field))
+    animateAction.triggered.connect(lambda: animateWfsLayer(layer, field))
+
+def addWmsAnimation(layer, instants):
+    animateAction = QtGui.QAction(u"Animate layer", iface.legendInterface())
+    iface.legendInterface().addLegendLayerAction(animateAction, u"MapStory", u"id1", QgsMapLayer.RasterLayer, False)
+    iface.legendInterface().addLegendLayerActionForLayer(animateAction, layer)
+    animateAction.triggered.connect(lambda: animateWmsLayer(layer, instants))
 
 animationWidget = None
-def animateLayer(layer, field):
+def animateWfsLayer(layer, field):
     global animationWidget
     if animationWidget is None:
         animationWidget = animationWidgetInstance
         iface.addDockWidget(QtCore.Qt.TopDockWidgetArea, animationWidget)
     animationWidget.setVisible(True)
-    animationWidget.setLayer(layer, field)
+    animationWidget.setVectorLayer(layer, field)
+
+
+def animateWmsLayer(layer, timeValues):
+    global animationWidget
+    if animationWidget is None:
+        animationWidget = animationWidgetInstance
+        iface.addDockWidget(QtCore.Qt.TopDockWidgetArea, animationWidget)
+    animationWidget.setVisible(True)
+    animationWidget.setRasterLayer(layer, timeValues)

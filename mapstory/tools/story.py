@@ -14,11 +14,13 @@ class Story():
         layers = [lay for lay in self.storydef["map"]["layers"] if "capability" in lay]
         for layer in layers:
             layer["source"] = self.storydef["sources"][layer["source"]]
-        self._layers = [StoryLayer(layer) for layer in layers]
+        self._layers = {layer["name"]: StoryLayer(layer) for layer in layers}
 
     def storyLayers(self):
-        return self._layers
+        return self._layers.values()
 
+    def storyLayerFromName(self, name):
+        return self._layers[name]
 
     def description(self):
         filename = resourceFile("storydescriptiontemplate.html")
@@ -30,8 +32,6 @@ class Story():
 
         return html
 
-
-        return self.storydef["about"]["abstract"]
 
     def title(self):
         return self.storydef["about"]["title"]
@@ -61,6 +61,9 @@ class StoryLayer():
         if not url.startswith("http://mapstory.org"):
             url = "http://mapstory.org" + url
         return url
+
+    def wmsTimeValues(self):
+        return self.layerdef["capability"]["dimensions"]["time"]["values"]
 
     def wfsUrl(self):
         return self.wmsUrl().replace("/wms", "/wfs")

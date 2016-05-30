@@ -13,7 +13,6 @@ from collections import defaultdict, OrderedDict
 import time
 import datetime
 
-
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 WIDGET, BASE = uic.loadUiType(
     os.path.join(pluginPath, 'ui', 'mapstoryanimation.ui'))
@@ -27,7 +26,21 @@ playIcon = icon("play.png")
 
 INSTANT, CUMULATIVE = 0, 1
 
+ZERO = datetime.timedelta(0)
+
 class AnimationWidget(BASE, WIDGET):
+
+    IGNORE_PREFIX = "IgnoreGetFeatureInfoUrl=1&IgnoreGetMapUrl=1&"
+
+    class UTC(datetime.tzinfo):
+        def utcoffset(self, dt):
+            return ZERO
+        def tzname(self, dt):
+            return "UTC"
+        def dst(self, dt):
+            return ZERO
+
+    utc = UTC()
 
     def __init__(self):
         super(AnimationWidget, self).__init__(None)
@@ -35,7 +48,6 @@ class AnimationWidget(BASE, WIDGET):
         self.setAllowedAreas(QtCore.Qt.TopDockWidgetArea)
 
         self.layer = None
-        self.field = None
         self.animating = False
         self.mode = INSTANT
 
@@ -84,32 +96,52 @@ class AnimationWidget(BASE, WIDGET):
             self.timeSlider.setValue(newValue)
 
     def valueChanged(self, val):
-        idx = min(next(i for i,v in enumerate(self.times.keys()) if v >= val), len(self.times) -1)
+        if isinstance(self.layer, QgsVectorLayer):
+            idx = min(next(i for i,v in enumerate(self.times.keys()) if v >= val), len(self.times) - 1)
 
-        fids = self.times.values()[idx]
-        if self.mode == CUMULATIVE:
-            for i in range(idx):
-                fids.extend(self.times.values()[i])
+            fids = self.times.values()[idx]
+            if self.mode == CUMULATIVE:
+                for i in range(idx):
+                    fids.extend(self.times.values()[i])
 
-        subsetString = "$id IN (%s)" % ",".join(fids)
-        self.layer.setSubsetString(subsetString)
-        iface.mapCanvas().refresh()
-        dt = datetime.datetime(1, 1, 1) + datetime.timedelta(milliseconds=val * 3600 * 1000)
-        self.labelCurrent.setText(unicode(dt.replace(microsecond=0)))
+            subsetString = "$id IN (%s)" % ",".join(fids)
+            self.layer.setSubsetString(subsetString)
+            iface.mapCanvas().refresh()
+            dt = datetime.datetime(1, 1, 1) + datetime.timedelta(milliseconds=val * 3600 * 1000)
+            self.labelCurrent.setText(unicode(dt.replace(microsecond=0)))
+        else:
+            idx = min(next(i for i,v in enumerate(self.times.keys()) if v >= val), len(self.times) - 1)
+            t1 = self.times.values()[idx]
+            if idx < len(self.times) - 1:
+                t2 = self.times.values()[idx + 1]
+            else:
+                t2 = t1
+            self.layer.dataProvider().setDataSourceUri(self.IGNORE_PREFIX +
+                                                       self.originalUri + "&TIME={}/{}".format(t1, t2))
 
 
-    def setLayer(self, layer, fieldname):
+    def setVectorLayer(self, layer, fieldname):
         self.layer = layer
-        self.fieldname = fieldname
-        times = defaultdict(list)
+        self.times = defaultdict(list)
         for feat in layer.getFeatures():
-            feattime = feat[self.fieldname]
+            feattime = feat[fieldname]
             dt = parser.parse(feattime)
             h = (dt - datetime.datetime(1,1,1)).total_seconds() / 3600
-            times[int(h)].append(str(feat.id()))
+            self.times[int(h)].append(str(feat.id()))
+        self.configForTimes()
 
-        self.times = OrderedDict(sorted(times.items()))
+    def setRasterLayer(self, layer, timeValues):
+        self.layer = layer
+        self.originalUri = self.layer.dataProvider().dataSourceUri()
+        self.times = {}
+        for time in timeValues:
+            dt = parser.parse(time)
+            h = (dt - datetime.datetime(1,1,1, tzinfo=self.utc)).total_seconds() / 3600
+            self.times[int(h)] = time
+        self.configForTimes()
 
+    def configForTimes(self):
+        self.times = OrderedDict(sorted(self.times.items()))
         self.timeSlider.blockSignals(True)
         self.timeSlider.setMinimum(self.times.keys()[0])
         self.timeSlider.setMaximum(self.times.keys()[-1])
@@ -120,7 +152,10 @@ class AnimationWidget(BASE, WIDGET):
 
 
     def closeClicked(self):
-        self.layer.setSubsetString("")
+        if isinstance(self.layer, QgsVectorLayer):
+            self.layer.setSubsetString("")
+        else:
+            self.layer.dataProvider().setDataSourceUri(self.originalUri)
         iface.mapCanvas().refresh()
         self.setVisible(False)
 

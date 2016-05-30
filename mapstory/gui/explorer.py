@@ -13,7 +13,7 @@ from mapstory.tools.utils import *
 from PyQt4.QtGui import QTreeWidgetItem
 from mapstory.tools.story import Story
 from mapstory.gui.executor import execute
-from mapstory.tools.animation import addAnimation
+from mapstory.tools.animation import addWfsAnimation, addWmsAnimation
 from mapstory.gui.searchdialog import SearchDialog
 
 def icon(f):
@@ -131,6 +131,8 @@ class MapStoryExplorer(BASE, WIDGET):
             if not qgslayer.isValid():
                 raise Exception ("Layer at %s is not a valid layer" % uri)
             QgsMapLayerRegistry.instance().addMapLayers([qgslayer])
+            timeValues = self.story.storyLayerFromName(name).wmsTimeValues()
+            addWmsAnimation(qgslayer, timeValues)
         elif service == "wfs":
             def f():
                 crs = iface.mapCanvas().mapRenderer().destinationCrs()
@@ -153,7 +155,7 @@ class MapStoryExplorer(BASE, WIDGET):
                     memlayer.commitChanges()
                     QgsMapLayerRegistry.instance().addMapLayers([memlayer])
                     memlayer.setSelectedFeatures([])
-                    addAnimation(memlayer, fieldname)
+                    addWfsAnimation(memlayer, fieldname)
             execute(f)
 
 

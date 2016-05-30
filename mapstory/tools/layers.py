@@ -5,7 +5,6 @@
 #
 from qgis.core import *
 from PyQt4 import QtCore
-import uuid
 import os
 from qgis.utils import iface
 
