@@ -69,7 +69,10 @@ class StoryLayer():
         return self.wmsUrl().replace("/wms", "/wfs")
 
     def crs(self):
-        return self.layerdef["capability"]["tileSets"][0]["srs"].keys()[0]
+        crs = self.layerdef["capability"]["tileSets"][0]["srs"].keys()[0]
+        if "900913" in crs:
+            crs = "EPSG:3857"
+        return crs
 
     def description(self):
         filename = resourceFile("layerdescriptiontemplate.html")
