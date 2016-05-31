@@ -111,13 +111,9 @@ class AnimationWidget(BASE, WIDGET):
             self.labelCurrent.setText(unicode(dt.replace(microsecond=0)))
         else:
             idx = min(next(i for i,v in enumerate(self.times.keys()) if v >= val), len(self.times) - 1)
-            t1 = self.times.values()[idx]
-            if idx < len(self.times) - 1:
-                t2 = self.times.values()[idx + 1]
-            else:
-                t2 = t1
+            t = self.times.values()[idx]
             self.layer.dataProvider().setDataSourceUri(self.IGNORE_PREFIX +
-                                                       self.originalUri + "&TIME={}/{}".format(t1, t2))
+                                                       self.originalUri + "&TIME=%s" % t)
 
 
     def setVectorLayer(self, layer, fieldname):
