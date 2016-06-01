@@ -17,10 +17,14 @@ class MapStoryPlugin:
             pass
 
     def unload(self):
-        explorerInstance.setVisible(False)
-        del explorerInstance
-        animationWidgetInstance.setVisible(False)
-        del animationWidgetInstance
+        try: #to avoid some random errors that seem to appear sometimes
+            explorerInstance.setVisible(False)
+            del explorerInstance
+            animationWidgetInstance.setVisible(False)
+            del animationWidgetInstance
+        except:
+            pass
+
 
     def initGui(self):
         icon = QtGui.QIcon(os.path.dirname(__file__) + "/ui/resources/mapstory.png")
