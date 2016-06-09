@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/boundlessgeo/qgis-mapstory-plugin.svg?branch=master
+    :target: https://travis-ci.org/boundlessgeo/qgis-mapstory-plugin
+
 MapStory
 ========
 
