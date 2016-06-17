@@ -114,6 +114,7 @@ class AnimationWidget(BASE, WIDGET):
             t = self.times.values()[idx]
             self.layer.dataProvider().setDataSourceUri(self.IGNORE_PREFIX +
                                                        self.originalUri + "&TIME=%s" % t)
+            iface.mapCanvas().refresh()
 
 
     def setVectorLayer(self, layer, fieldname):
@@ -124,6 +125,7 @@ class AnimationWidget(BASE, WIDGET):
             dt = parser.parse(feattime)
             h = (dt - datetime.datetime(1,1,1)).total_seconds() / 3600
             self.times[int(h)].append(str(feat.id()))
+        self.comboMode.setVisible(True)
         self.configForTimes()
 
     def setRasterLayer(self, layer, timeValues):
@@ -134,6 +136,7 @@ class AnimationWidget(BASE, WIDGET):
             dt = parser.parse(time)
             h = (dt - datetime.datetime(1,1,1, tzinfo=self.utc)).total_seconds() / 3600
             self.times[int(h)] = time
+        self.comboMode.setVisible(False)
         self.configForTimes()
 
     def configForTimes(self):
@@ -148,6 +151,7 @@ class AnimationWidget(BASE, WIDGET):
 
 
     def closeClicked(self):
+        self.animating = False
         if isinstance(self.layer, QgsVectorLayer):
             self.layer.setSubsetString("")
         else:
