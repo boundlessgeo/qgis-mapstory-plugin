@@ -25,6 +25,13 @@ class MapStoryPlugin:
         except:
             pass
 
+        try:
+            from mapstory.tests import testerplugin
+            from qgistester.tests import removeTestModule
+            removeTestModule(testerplugin, "MapStory")
+        except:
+            pass
+
 
     def initGui(self):
         icon = QtGui.QIcon(os.path.dirname(__file__) + "/ui/resources/mapstory.png")
