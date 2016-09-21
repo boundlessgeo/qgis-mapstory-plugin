@@ -113,50 +113,14 @@ def install(options):
     ('tests', 't', 'Package tests with plugin'),
 ])
 def package(options):
-    '''create package for plugin'''
+    """Create plugin package
+    """
     package_file = options.plugin.package_dir / ('%s.zip' % options.plugin.name)
-    with zipfile.ZipFile(package_file, "w", zipfile.ZIP_DEFLATED) as zip:
+    with zipfile.ZipFile(package_file, 'w', zipfile.ZIP_DEFLATED) as zf:
         if not hasattr(options.package, 'tests'):
             options.plugin.excludes.extend(options.plugin.tests)
-        make_zip(zip, options)
+        _make_zip(zf, options)
     return package_file
-
-
-def make_zip(zip, options):
-    metadata_file = options.plugin.source_dir / "metadata.txt"
-    cfg = ConfigParser.SafeConfigParser()
-    cfg.optionxform = str
-    cfg.read(metadata_file)
-    base_version = cfg.get('general', 'version')
-    head_path = path('.git/HEAD')
-    head_ref = head_path.open('rU').readline().strip()[5:]
-    ref_file = path(".git/" + head_ref)
-    ref = ref_file.open('rU').readline().strip()
-    cfg.set("general", "version", "%s-%s-%s" % (base_version, datetime.now().strftime("%Y%m%d"), ref))
-
-    buf = StringIO()
-    cfg.write(buf)
-    zip.writestr("mapstory/metadata.txt", buf.getvalue())
-
-    excludes = set(options.plugin.excludes)
-
-    src_dir = options.plugin.source_dir
-    exclude = lambda p: any([fnmatch.fnmatch(p, e) for e in excludes])
-    def filter_excludes(files):
-        if not files: return []
-        # to prevent descending into dirs, modify the list in place
-        for i in xrange(len(files) - 1, -1, -1):
-            f = files[i]
-            if exclude(f):
-                debug('excluding %s' % f)
-                files.remove(f)
-        return files
-
-    for root, dirs, files in os.walk(src_dir):
-        for f in filter_excludes(files):
-            relpath = os.path.relpath(root, '.')
-            zip.write(path(root) / f, path(relpath) / f)
-        filter_excludes(dirs)
 
 
 @task
@@ -199,3 +163,27 @@ def upload(options):
         error("%s : %s", err.errcode, err.errmsg)
         if err.errcode == 403:
             error("Invalid name and password?")
+
+
+def _make_zip(zipFile, options):
+    excludes = set(options.plugin.excludes)
+    skips = options.plugin.skip_exclude
+
+    src_dir = options.plugin.source_dir
+    exclude = lambda p: any([path(p).fnmatch(e) for e in excludes])
+    def filter_excludes(root, items):
+        if not items:
+            return []
+        # to prevent descending into dirs, modify the list in place
+        for item in list(items):  # copy list or iteration values change
+            itempath = path(os.path.relpath(root)) / item
+            if exclude(item) and item not in skips:
+                debug('Excluding %s' % itempath)
+                items.remove(item)
+        return items
+
+    for root, dirs, files in os.walk(src_dir):
+        for f in filter_excludes(root, files):
+            relpath = os.path.relpath(root)
+            zipFile.write(path(root) / f, path(relpath) / f)
+        filter_excludes(root, dirs)
