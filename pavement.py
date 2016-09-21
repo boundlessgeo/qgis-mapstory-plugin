@@ -26,7 +26,8 @@ options(
         excludes = [
             'metadata.txt',
             'ext-src',
-            '*.pyc'
+            '.git',
+            '*.pyc',
         ]
     ),
 
