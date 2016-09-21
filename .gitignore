@@ -2,3 +2,4 @@ bin
 *.pyc
 ext-libs
 mapstory.zip
+travis_secrets.tar.gz
