@@ -24,7 +24,6 @@ options(
         package_dir = path('.'),
         tests = ['test', 'tests'],
         excludes = [
-            'metadata.txt',
             'ext-src',
             '.git',
             '*.pyc',
