@@ -28,7 +28,8 @@ options(
             'ext-src',
             '.git',
             '*.pyc',
-        ]
+        ],
+        skip_exclude = [],
     ),
 
     # Default Server Params (can be overridden)
