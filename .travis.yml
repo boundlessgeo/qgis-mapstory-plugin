@@ -32,16 +32,19 @@ notifications:
   slack:
     secure: sFRbG/Ay992WkV7+xkiGFMnWgUSa928/74N9ImErHo3bnio4b7lne4fyD+T1VVFgpx8p2wExS0P/Jy7782L1ljMkubKpH3GE6Edymdk6/tvVwfR8ctFlMzew66W4woU8F0uhkGxJvCNS3fCPJVSTRyv/D2UcfcSWlEI80AH3n1zLXdUgTMED+4VM/MQnVU0vwKD4RgxfKJv1lULgn0ovsJPHjMpPD4mLkqq/o+LrGf0j9Z20+eEJiw30uNR+vSmB0IW7rvLmbtBqU9RDuTDsAi8CP9+eVoxIVozKf9qiuaobUDf9Ik/GItcHkNo3qa29K0yABVg5Shpqwx2VM5DkKYdRSmbzVp5WFrSsPCA5WlTe+HvHRSHIF78lUarLSqMeCAkiPnYj+SLn5Okzg2wVAqvIvXSODD2sXI5uLSwMOnlX6HFUE5UzHPjgV2fiTbCN5C5heRW2+dTe5ZhEJ3sRV5tKCmUD9qdUFVadK2IFjM0fDCqLw4IivMLNw5a8nakEIoxX/0wg1KQtNr6cAI/AFcBwm7lGA71b7suXC4Jt3hizWau3q2liuBd3EDiia1uAEO1eiKxPPREM2bLWOI45uJLFLvLcN3Jf43vQIEx/YqZKRXjLyU98TLJAXJJny+zK2ARF2fm19oPOa75nSdT23Y3FkHHHkHwnQKGM0Wlq/J8=
 after_success:
-- mkdir /home/travis/.ssh/
-- chmod 700 /home/travis/.ssh/
-- openssl aes-256-cbc -K $encrypted_14203cc7e19a_key -iv $encrypted_14203cc7e19a_iv -in travis_secrets.tar.gz.enc -out travis_secrets.tar.gz -d
-- tar xzvf travis_secrets.tar.gz
-- mv id_rsa.qgisrepoguest /home/travis/.ssh/id_rsa.qgisrepoguest
-- mv ssh_config /home/travis/.ssh/config
-- chmod 600 /home/travis/.ssh/id_rsa.qgisrepoguest
-- chmod 600 /home/travis/.ssh/config
-- export RELEASE_ZIPNAME=${PLUGIN_NAME}.zip
-- echo "Uploading ${RELEASE_ZIPNAME} to QGIS Dev..."
-- scp ${PLUGIN_NAME}.zip qgisrepoguest:${UPLOADS}/${RELEASE_ZIPNAME}
-- export GIT_REV=$(git rev-parse --short HEAD)
-- ssh qgisrepoguest "${UPDATER} update --dev --role DesktopPartner,DesktopDeveloper --git-hash ${GIT_REV} ${RELEASE_ZIPNAME}"
+- |
+    if [ "${TRAVIS_PULL_REQUEST}" = "false" ] && [ "${TRAVIS_BRANCH}" = "master" ]; then
+        mkdir /home/travis/.ssh/
+        chmod 700 /home/travis/.ssh/
+        openssl aes-256-cbc -K $encrypted_14203cc7e19a_key -iv $encrypted_14203cc7e19a_iv -in travis_secrets.tar.gz.enc -out travis_secrets.tar.gz -d
+        tar xzvf travis_secrets.tar.gz
+        mv id_rsa.qgisrepoguest /home/travis/.ssh/id_rsa.qgisrepoguest
+        mv ssh_config /home/travis/.ssh/config
+        chmod 600 /home/travis/.ssh/id_rsa.qgisrepoguest
+        chmod 600 /home/travis/.ssh/config
+        export RELEASE_ZIPNAME=${PLUGIN_NAME}.zip
+        echo "Uploading ${RELEASE_ZIPNAME} to QGIS Dev..."
+        scp ${PLUGIN_NAME}.zip qgisrepoguest:${UPLOADS}/${RELEASE_ZIPNAME}
+        export GIT_REV=$(git rev-parse --short HEAD)
+        ssh qgisrepoguest "${UPDATER} update --dev --role DesktopPartner,DesktopDeveloper --git-hash ${GIT_REV} ${RELEASE_ZIPNAME}"
+    fi
