@@ -1,8 +1,14 @@
 import os
-from qgis.core import *
-from PyQt4 import QtGui, QtCore
+
+from qgis.core import QgsApplication
+
+from PyQt4.QtCore import Qt, QCoreApplication, QUrl
+from PyQt4.QtGui import QAction, QIcon, QDesktopServices, QMessageBox
+
 from mapstory.gui.explorer import explorerInstance
 from mapstory.gui.animation import animationWidgetInstance
+
+pluginPath = os.path.dirname(__file__)
 
 
 class MapStoryPlugin:
@@ -32,20 +38,31 @@ class MapStoryPlugin:
         except:
             pass
 
-
     def initGui(self):
-        icon = QtGui.QIcon(os.path.dirname(__file__) + "/ui/resources/mapstory.png")
+        icon = QIcon(os.path.dirname(__file__) + "/ui/resources/mapstory.png")
         self.explorerAction = explorerInstance.toggleViewAction()
         self.explorerAction.setIcon(icon)
         self.explorerAction.setText("MapStory explorer")
         self.iface.addPluginToMenu(u"&MapStory", self.explorerAction)
 
-        self.iface.addDockWidget(QtCore.Qt.RightDockWidgetArea, explorerInstance)
+        self.actionHelp = QAction(
+            self.tr('Help'), self.iface.mainWindow())
+        self.actionHelp.setIcon(
+            QgsApplication.getThemeIcon('/mActionHelpContents.svg'))
+        self.actionHelp.setWhatsThis(
+            self.tr('Boundless Connect documentation'))
+        self.actionHelp.setObjectName('actionMapStoryHelp')
+        self.actionHelp.triggered.connect(self.showHelp)
+        self.iface.addPluginToMenu(u"&MapStory", self.actionHelp)
 
+        self.iface.addDockWidget(Qt.RightDockWidgetArea, explorerInstance)
 
+    def showHelp(self):
+        if not QDesktopServices.openUrl(
+                QUrl('file://{}'.format(os.path.join(pluginPath, 'docs', 'html', 'index.html')))):
+            QMessageBox.warning(None,
+                                self.tr('Error'),
+                                self.tr('Can not open help URL in browser'))
 
-
-
-
-
-
+    def tr(self, text):
+        return QCoreApplication.translate('Boundless Connect', text)

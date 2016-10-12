@@ -31,18 +31,10 @@ options(
         skip_exclude = [],
     ),
 
-    # Default Server Params (can be overridden)
-    plugin_server = Bunch(
-        server = 'qgis.boundlessgeo.com',
-        port = 80,
-        protocol = 'http',
-        end_point = '/RPC2/'
-    ),
-
     sphinx = Bunch(
-        docroot = 'doc',
-        sourcedir = 'source',
-        builddir = 'build'
+        docroot = path('docs'),
+        sourcedir = path('docs/source'),
+        builddir = path('docs/build')
     )
 )
 
@@ -115,6 +107,7 @@ def install(options):
 def package(options):
     """Create plugin package
     """
+    builddocs(options)
     package_file = options.plugin.package_dir / ('%s.zip' % options.plugin.name)
     with zipfile.ZipFile(package_file, 'w', zipfile.ZIP_DEFLATED) as zf:
         if not hasattr(options.package, 'tests'):
@@ -124,45 +117,13 @@ def package(options):
 
 
 @task
-@cmdopts([
-    ('user=', 'u', 'upload user'),
-    ('passwd=', 'p', 'upload password'),
-    ('server=', 's', 'alternate server'),
-    ('end_point=', 'e', 'alternate endpoint'),
-    ('port=', 't', 'alternate port'),
-])
-def upload(options):
-    '''upload the package to the server'''
-    package_file = package(options)
-    user, passwd = getattr(options, 'user', None), getattr(options, 'passwd', None)
-    if not user or not passwd:
-        raise BuildFailure('provide user and passwd options to upload task')
-    # create URL for XML-RPC calls
-    s = options.plugin_server
-    server, end_point, port = getattr(options, 'server', None), getattr(options, 'end_point', None), getattr(options, 'port', None)
-    if server == None:
-        server = s.server
-    if end_point == None:
-        end_point = s.end_point
-    if port == None:
-        port = s.port
-    uri = "%s://%s:%s@%s:%s%s" % (s.protocol, options['user'], options['passwd'], server, port, end_point)
-    info('uploading to %s', uri)
-    server = xmlrpclib.ServerProxy(uri, verbose=False)
-    try:
-        pluginId, versionId = server.plugin.upload(xmlrpclib.Binary(package_file.bytes()))
-        info("Plugin ID: %s", pluginId)
-        info("Version ID: %s", versionId)
-        package_file.unlink()
-    except xmlrpclib.Fault, err:
-        error("A fault occurred")
-        error("Fault code: %d", err.faultCode)
-        error("Fault string: %s", err.faultString)
-    except xmlrpclib.ProtocolError, err:
-        error("Protocol error")
-        error("%s : %s", err.errcode, err.errmsg)
-        if err.errcode == 403:
-            error("Invalid name and password?")
+def builddocs(options):
+    sh("git submodule init")
+    sh("git submodule update")
+    cwd = os.getcwd()
+    os.chdir(options.sphinx.docroot)
+    sh("make html")
+    os.chdir(cwd)
 
 
 def _make_zip(zipFile, options):
@@ -187,3 +148,8 @@ def _make_zip(zipFile, options):
             relpath = os.path.relpath(root)
             zipFile.write(path(root) / f, path(relpath) / f)
         filter_excludes(root, dirs)
+
+    for root, dirs, files in os.walk(options.sphinx.builddir):
+        for f in files:
+            relpath = os.path.join(options.plugin.name, "docs", os.path.relpath(root, options.sphinx.builddir))
+            zipFile.write(path(root) / f, path(relpath) / f)
