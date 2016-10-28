@@ -3,3 +3,4 @@ bin
 ext-libs
 mapstory.zip
 travis_secrets.tar.gz
+docs/build
