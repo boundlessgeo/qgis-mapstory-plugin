@@ -7,7 +7,7 @@ import os
 import sys
 
 from PyQt import uic
-from qgis.PyQt.QtCore import Qt, QDir, QSettings
+from qgis.PyQt.QtCore import Qt, QDir, QSettings, QT_VERSION_STR
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QHeaderView, QTreeWidgetItem, QMessageBox, QFileDialog
 
@@ -29,6 +29,8 @@ layersIcon = icon("layer_group.gif")
 
 # Adding so that our UI files can find resources_rc.py
 sys.path.append(os.path.dirname(__file__))
+
+qtVersion = int(QT_VERSION_STR.split(".")[0])
 
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 WIDGET, BASE = uic.loadUiType(
@@ -67,8 +69,9 @@ class MapStoryExplorer(BASE, WIDGET):
             sheet = "".join(f.readlines())
         self.layerDescription.document().setDefaultStyleSheet(sheet)
         self.storyDescription.document().setDefaultStyleSheet(sheet)
-        self.layersTree.header().setResizeMode(0, QHeaderView.Stretch)
-        self.layersTree.header().setResizeMode(1, QHeaderView.ResizeToContents)
+        if qtVersion < 5:
+            self.layersTree.header().setResizeMode(0, QHeaderView.Stretch)
+            self.layersTree.header().setResizeMode(1, QHeaderView.ResizeToContents)
 
         self.updateCurrentStory(None)
 
