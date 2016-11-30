@@ -1,3 +1,4 @@
+from builtins import object
 # -*- coding: utf-8 -*-
 #
 # (c) 2016 Boundless, http://boundlessgeo.com
@@ -7,7 +8,7 @@ from mapstory.tools.utils import resourceFile
 from mapstory.gui.executor import execute
 import requests
 
-class Story():
+class Story(object):
 
     def __init__(self, storydef):
         self.storydef = storydef
@@ -17,7 +18,7 @@ class Story():
         self._layers = {layer["name"]: StoryLayer(layer) for layer in layers}
 
     def storyLayers(self):
-        return self._layers.values()
+        return list(self._layers.values())
 
     def storyLayerFromName(self, name):
         return self._layers[name]
@@ -45,7 +46,7 @@ class Story():
         else:
             return None
 
-class StoryLayer():
+class StoryLayer(object):
 
     def __init__(self, layerdef):
         self.layerdef = layerdef
@@ -69,7 +70,7 @@ class StoryLayer():
         return self.wmsUrl().replace("/wms", "/wfs")
 
     def crs(self):
-        crs = self.layerdef["capability"]["tileSets"][0]["srs"].keys()[0]
+        crs = list(self.layerdef["capability"]["tileSets"][0]["srs"].keys())[0]
         if "900913" in crs:
             crs = "EPSG:3857"
         return crs

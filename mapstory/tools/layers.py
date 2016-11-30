@@ -1,10 +1,11 @@
+from builtins import str
 # -*- coding: utf-8 -*-
 #
 # (c) 2016 Boundless, http://boundlessgeo.com
 # This code is licensed under the GPL 2.0 license.
 #
 from qgis.core import *
-from PyQt4 import QtCore
+from PyQt import QtCore
 import os
 from qgis.utils import iface
 
@@ -37,7 +38,7 @@ def getVectorLayers(shapetype = -1):
     for layer in layers:
         if layer.type() == layer.VectorLayer:
             if shapetype == ALL_TYPES or layer.geometryType() == shapetype:
-                uri = unicode(layer.source())
+                uri = str(layer.source())
                 if not uri.lower().endswith("csv") and not uri.lower().endswith("dbf"):
                     vector.append(layer)
     return vector

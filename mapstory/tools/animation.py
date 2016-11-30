@@ -5,7 +5,7 @@
 #
 from qgis.core import *
 from qgis.utils import iface
-from PyQt4 import QtGui, QtCore
+from PyQt import QtGui, QtCore
 from mapstory.gui.animation import animationWidgetInstance
 
 def addWfsAnimation(layer, field):

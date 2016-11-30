@@ -1,9 +1,11 @@
+from builtins import object
 import os
 
 from qgis.core import QgsApplication
 
-from PyQt4.QtCore import Qt, QCoreApplication, QUrl
-from PyQt4.QtGui import QAction, QIcon, QDesktopServices, QMessageBox
+from qgis.PyQt.QtCore import Qt, QCoreApplication, QUrl
+from qgis.PyQt.QtWidgets import QAction, QMessageBox
+from qgis.PyQt.QtGui import QIcon, QDesktopServices
 
 from mapstory.gui.explorer import explorerInstance
 from mapstory.gui.animation import animationWidgetInstance
@@ -11,7 +13,7 @@ from mapstory.gui.animation import animationWidgetInstance
 pluginPath = os.path.dirname(__file__)
 
 
-class MapStoryPlugin:
+class MapStoryPlugin(object):
 
     def __init__(self, iface):
         self.iface = iface

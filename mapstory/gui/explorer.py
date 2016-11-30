@@ -4,20 +4,25 @@
 # This code is licensed under the GPL 2.0 license.
 #
 import os
-from PyQt4 import QtGui, QtCore, uic
-from qgis.core import *
-from qgis.gui import *
-from qgis.utils import iface
 import sys
-from mapstory.tools.utils import *
-from PyQt4.QtGui import QTreeWidgetItem
-from mapstory.tools.story import Story
+
+from PyQt import uic
+from qgis.PyQt.QtCore import Qt, QDir, QSettings
+from qgis.PyQt.QtGui import QIcon
+from qgis.PyQt.QtWidgets import QHeaderView, QTreeWidgetItem, QMessageBox, QFileDialog
+
+from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsRasterLayer, QgsMapLayerRegistry
+from qgis.gui import QgsMessageBar
+from qgis.utils import iface
+
 from mapstory.gui.executor import execute
-from mapstory.tools.animation import addWfsAnimation, addWmsAnimation
 from mapstory.gui.searchdialog import SearchDialog
+from mapstory.tools.utils import resourceFile, closeProgressBar, setProgress, startProgressBar,
+from mapstory.tools.story import Story
+from mapstory.tools.animation import addWfsAnimation, addWmsAnimation
 
 def icon(f):
-    return QtGui.QIcon(os.path.join(os.path.dirname(__file__), os.pardir, "resources", f))
+    return QIcon(os.path.join(os.path.dirname(__file__), os.pardir, "resources", f))
 
 layerIcon = icon("layer.png")
 layersIcon = icon("layer_group.gif")
@@ -47,26 +52,25 @@ class MapStoryExplorer(BASE, WIDGET):
         self.currentLayerItem = None
         self.setupUi(self)
 
-        self.setAllowedAreas(QtCore.Qt.RightDockWidgetArea | QtCore.Qt.LeftDockWidgetArea)
+        self.setAllowedAreas(Qt.RightDockWidgetArea | Qt.LeftDockWidgetArea)
 
         self.layersTree.itemClicked.connect(self.treeItemClicked)
         self.layerDescription.setOpenLinks(False)
         self.layerDescription.anchorClicked.connect(self.layerDescriptionLinkClicked)
-        self.layerDescription.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.layerDescription.setFocusPolicy(Qt.NoFocus)
 
         self.storyDescription.setOpenLinks(False)
         self.storyDescription.anchorClicked.connect(self.storyDescriptionLinkClicked)
-        self.storyDescription.setFocusPolicy(QtCore.Qt.NoFocus)
+        self.storyDescription.setFocusPolicy(Qt.NoFocus)
 
         with open(resourceFile("layerdescription.css")) as f:
             sheet = "".join(f.readlines())
         self.layerDescription.document().setDefaultStyleSheet(sheet)
         self.storyDescription.document().setDefaultStyleSheet(sheet)
-        self.layersTree.header().setResizeMode(0, QtGui.QHeaderView.Stretch)
-        self.layersTree.header().setResizeMode(1, QtGui.QHeaderView.ResizeToContents)
+        self.layersTree.header().setResizeMode(0, QHeaderView.Stretch)
+        self.layersTree.header().setResizeMode(1, QHeaderView.ResizeToContents)
 
         self.updateCurrentStory(None)
-
 
     def storyDescriptionLinkClicked(self, url):
         url = url.toString()
@@ -76,20 +80,20 @@ class MapStoryExplorer(BASE, WIDGET):
             if dlg.mapstory is not None:
                 story = Story.storyFromNumberId(dlg.mapstory)
                 if story is None:
-                    QtGui.QMessageBox.warning(iface.mainWindow(), "MapStory", "Cannot get MapStory data.\nCheck that the provided ID is correct.")
+                    QMessageBox.warning(iface.mainWindow(), "MapStory", "Cannot get MapStory data.\nCheck that the provided ID is correct.")
                 else:
                     self.updateCurrentStory(story)
         elif url == "download":
-            outDir = QtGui.QFileDialog.getExistingDirectory(self,
+            outDir = QFileDialog.getExistingDirectory(self,
                                                   self.tr("Select output directory"),
                                                   "."
                                                  )
             if not outDir:
                 return
 
-            QtCore.QDir().mkpath(outDir)
+            QDir().mkpath(outDir)
 
-            settings = QtCore.QSettings()
+            settings = QSettings()
             systemEncoding = settings.value('/UI/encoding', 'System')
             startProgressBar(len(self.story.storyLayers()), "Download layers for off-line use:")
             for i, layer in enumerate(self.story.storyLayers()):
@@ -114,7 +118,6 @@ class MapStoryExplorer(BASE, WIDGET):
 
             closeProgressBar()
             iface.messageBar().pushMessage("MapStory", "Layers have been correctly saved as QGIS project.", level=QgsMessageBar.INFO, duration=3)
-
 
     def _getTimeField(self, layer):
         fields = layer.pendingFields()
@@ -158,9 +161,6 @@ class MapStoryExplorer(BASE, WIDGET):
                     addWfsAnimation(memlayer, fieldname)
             execute(f)
 
-
-
-
     def updateCurrentStory(self, story):
         self.layersTree.clear()
         self.currentLayerItem = None
@@ -181,7 +181,6 @@ class MapStoryExplorer(BASE, WIDGET):
 
         self.layersItem.setExpanded(True)
 
-
     def treeItemClicked(self, item, i):
         if self.currentLayerItem == item:
             return
@@ -189,20 +188,16 @@ class MapStoryExplorer(BASE, WIDGET):
         if isinstance(item, LayerItem):
             self.updateCurrentLayer()
 
-
     def updateCurrentLayer(self):
         self.layerDescription.setText(self.currentLayerItem.layer.description())
 
 
-class LayerItem(QtGui.QTreeWidgetItem):
+class LayerItem(QTreeWidgetItem):
     def __init__(self, layer):
-        QtGui.QTreeWidgetItem.__init__(self)
+        QTreeWidgetItem.__init__(self)
         self.layer = layer
         self.setText(0, layer.title())
         self.setIcon(0, layerIcon)
 
 
 explorerInstance = MapStoryExplorer()
-
-
-

@@ -3,16 +3,13 @@
 # (c) 2016 Boundless, http://boundlessgeo.com
 # This code is licensed under the GPL 2.0 license.
 #
-from cStringIO import StringIO
-import ConfigParser
-from datetime import date, datetime
-import fnmatch
+
 import os
-from paver.easy import *
-# this pulls in the sphinx target
-from paver.doctools import html
-import xmlrpclib
+import fnmatch
 import zipfile
+
+from paver.easy import *
+
 
 
 options(
@@ -53,6 +50,13 @@ def setup(options):
         ext_libs.rmtree()
     ext_libs.makedirs()
     runtime, test = read_requirements()
+
+    try:
+        import pip
+    except:
+        error('FATAL: Unable to import pip, please install it first!')
+        sys.exit(1)
+
     os.environ['PYTHONPATH']=ext_libs.abspath()
     for req in runtime + test:
         if "#egg" in req:
@@ -66,10 +70,11 @@ def setup(options):
             else:
                 sh('git clone  %s %s' % (urlspec, localpath))
             req = localpath
-        sh('easy_install -a -d %(ext_libs)s %(dep)s' % {
-            'ext_libs' : ext_libs.abspath(),
-            'dep' : req
-        })
+
+        pip.main(['install',
+                  '-t',
+                  ext_libs.abspath(),
+                  req])
 
 
 def read_requirements():

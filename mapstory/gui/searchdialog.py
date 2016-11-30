@@ -1,14 +1,19 @@
-from PyQt4 import QtGui, QtWebKit, QtCore
-from qgis.core import *
-from qgis.gui import *
-from qgis.utils import iface
+from builtins import str
 import os
-from requests.exceptions import RequestException
+
 import requests
+from requests.exceptions import RequestException
+
+from qgis.PyQt.QtCore import QUrl
+from qgis.PyQt.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QLineEdit, QToolButton, QFrame, QMessageBox
+from qgis.PyQt.QtWebKitWidgets import QWebView, QWebPage
+
+from qgis.utils import iface
+
 from mapstory.tools.utils import resourceFile
 from mapstory.gui.executor import execute
 
-class SearchDialog(QtGui.QDialog):
+class SearchDialog(QDialog):
 
     def __init__(self):
         super(SearchDialog, self).__init__(iface.mainWindow())
@@ -16,14 +21,14 @@ class SearchDialog(QtGui.QDialog):
         self.mapstory = None
 
     def initGui(self):
-        hlayout = QtGui.QHBoxLayout()
-        layout = QtGui.QVBoxLayout()
-        self.searchBox = QtGui.QLineEdit()
+        hlayout = QHBoxLayout()
+        layout = QVBoxLayout()
+        self.searchBox = QLineEdit()
         self.searchBox.returnPressed.connect(self.search)
         self.searchBox.setPlaceholderText("[Enter search string and press enter to search for maps]")
         hlayout.addWidget(self.searchBox)
 
-        self.button = QtGui.QToolButton()
+        self.button = QToolButton()
         self.button.setText("Search")
         self.button.clicked.connect(self.search)
         self.button.adjustSize()
@@ -31,10 +36,10 @@ class SearchDialog(QtGui.QDialog):
         hlayout.addWidget(self.button)
         layout.addLayout(hlayout)
 
-        w = QtGui.QFrame()
-        self.browser = QtWebKit.QWebView()
+        w = QFrame()
+        self.browser = QWebView()
         w.setStyleSheet("QFrame{border:1px solid rgb(0, 0, 0);}")
-        innerlayout = QtGui.QHBoxLayout()
+        innerlayout = QHBoxLayout()
         innerlayout.setSpacing(0)
         innerlayout.setMargin(0)
         innerlayout.addWidget(self.browser)
@@ -42,8 +47,8 @@ class SearchDialog(QtGui.QDialog):
         layout.addWidget(w)
         self.setLayout(layout)
 
-        self.browser.page().setLinkDelegationPolicy(QtWebKit.QWebPage.DelegateAllLinks)
-        self.browser.settings().setUserStyleSheetUrl(QtCore.QUrl("file://" + resourceFile("search.css").replace("\\", "/")))
+        self.browser.page().setLinkDelegationPolicy(QWebPage.DelegateAllLinks)
+        self.browser.settings().setUserStyleSheetUrl(QUrl("file://" + resourceFile("search.css").replace("\\", "/")))
         self.browser.linkClicked.connect(self.linkClicked)
         self.resize(600, 500)
         self.setWindowTitle("Search stories")
@@ -68,7 +73,7 @@ class SearchDialog(QtGui.QDialog):
                 else:
                     s = "<h2>No maps matching your search criteria were found.</h2>"
                 self.browser.setHtml(s)
-            except RequestException, e:
-                    QtGui.QMessageBox.warning(self, "Search",
-                        u"There has been a problem performing the search:\n" + unicode(e.args[0]),
-                        QtGui.QMessageBox.Ok)
+            except RequestException as e:
+                    QMessageBox.warning(self, "Search",
+                        u"There has been a problem performing the search:\n" + str(e.args[0]),
+                        QMessageBox.Ok)
