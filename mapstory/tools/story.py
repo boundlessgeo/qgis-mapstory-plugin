@@ -1,3 +1,8 @@
+try:
+    import builtins
+except ImportError:
+    builtins = __builtin__
+
 from builtins import object
 # -*- coding: utf-8 -*-
 #
@@ -88,4 +93,3 @@ class StoryLayer(object):
         html = html.replace("[NAME]", self.name())
         html = html.replace("[CRS]", self.crs())
         return html
-

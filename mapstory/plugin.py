@@ -1,3 +1,7 @@
+try:
+    import builtins
+except ImportError:
+    builtins = __builtin__
 from builtins import object
 import os
 

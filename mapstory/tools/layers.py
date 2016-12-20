@@ -1,3 +1,7 @@
+try:
+    import builtins
+except ImportError:
+    builtins = __builtin__
 from builtins import str
 # -*- coding: utf-8 -*-
 #
@@ -5,7 +9,7 @@ from builtins import str
 # This code is licensed under the GPL 2.0 license.
 #
 from qgis.core import *
-from PyQt import QtCore
+from qgis.PyQt import QtCore
 import os
 from qgis.utils import iface
 
@@ -55,6 +59,3 @@ def getGroups():
             groupLayers = rel[1]
             groups[groupName] = [QgsMapLayerRegistry.instance().mapLayer(layerid) for layerid in groupLayers]
     return groups
-
-
-

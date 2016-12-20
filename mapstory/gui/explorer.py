@@ -6,18 +6,18 @@
 import os
 import sys
 
-from PyQt import uic
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QDir, QSettings, QT_VERSION_STR
 from qgis.PyQt.QtGui import QIcon
 from qgis.PyQt.QtWidgets import QHeaderView, QTreeWidgetItem, QMessageBox, QFileDialog
 
-from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsRasterLayer, QgsMapLayerRegistry
+from qgis.core import QgsVectorLayer, QgsVectorFileWriter, QgsRasterLayer, QgsMapLayerRegistry, QGis
 from qgis.gui import QgsMessageBar
 from qgis.utils import iface
 
 from mapstory.gui.executor import execute
 from mapstory.gui.searchdialog import SearchDialog
-from mapstory.tools.utils import resourceFile, closeProgressBar, setProgress, startProgressBar,
+from mapstory.tools.utils import resourceFile, closeProgressBar, setProgress, startProgressBar
 from mapstory.tools.story import Story
 from mapstory.tools.animation import addWfsAnimation, addWmsAnimation
 
@@ -35,6 +35,7 @@ qtVersion = int(QT_VERSION_STR.split(".")[0])
 pluginPath = os.path.split(os.path.dirname(__file__))[0]
 WIDGET, BASE = uic.loadUiType(
     os.path.join(pluginPath, 'ui', 'mapstoryexplorer.ui'))
+
 
 GEOM_TYPE_MAP = {
     QGis.WKBPoint: 'Point',
@@ -101,7 +102,7 @@ class MapStoryExplorer(BASE, WIDGET):
             startProgressBar(len(self.story.storyLayers()), "Download layers for off-line use:")
             for i, layer in enumerate(self.story.storyLayers()):
                 filename = os.path.join(outDir, layer.name() + ".shp")
-                uri = "%s?srsname=%s&typename=%s&version=1.0.0&request=GetFeature&service=WFS" % (layer.wfsUrl(), layer.crs(), layer.name())
+                uri = "%s?srsname=%s&typename=geonode:%s&version=1.0.0&request=GetFeature&service=WFS" % (layer.wfsUrl(), layer.crs(), layer.name())
                 qgslayer = QgsVectorLayer(uri, layer.name(), "WFS")
                 writer = QgsVectorFileWriter(filename, systemEncoding,
                                              qgslayer.pendingFields(),
@@ -142,7 +143,7 @@ class MapStoryExplorer(BASE, WIDGET):
         elif service == "wfs":
             def f():
                 crs = iface.mapCanvas().mapRenderer().destinationCrs()
-                uri = "%s?srsname=%s&typename=%s&version=1.0.0&request=GetFeature&service=WFS" % (url, crs.authid(), name)
+                uri = "%s?srsname=%s&typename=geonode:%s&version=1.0.0&request=GetFeature&service=WFS" % (url, crs.authid(), name)
                 qgslayer = QgsVectorLayer(uri, name, "WFS")
                 if not qgslayer.isValid():
                     raise Exception ("Layer at %s is not a valid layer" % uri)

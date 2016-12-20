@@ -1,3 +1,7 @@
+try:
+    import builtins
+except ImportError:
+    builtins = __builtin__
 from builtins import str
 from builtins import next
 from builtins import range
@@ -12,7 +16,7 @@ from collections import defaultdict, OrderedDict
 import time
 import datetime
 
-from PyQt import uic
+from qgis.PyQt import uic
 from qgis.PyQt.QtCore import Qt, QTimer
 from qgis.PyQt.QtGui import QIcon
 from qgis.core import QgsVectorLayer
@@ -165,6 +169,3 @@ class AnimationWidget(BASE, WIDGET):
         self.setVisible(False)
 
 animationWidgetInstance = AnimationWidget()
-
-
-

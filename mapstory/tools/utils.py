@@ -4,9 +4,9 @@
 # This code is licensed under the GPL 2.0 license.
 #
 import os
-from PyQt import QtCore, QtGui
+from qgis.PyQt import QtCore, QtGui
 from qgis.core import *
-from qgis.gui    import *
+from qgis.gui import *
 import sip
 from qgis.utils import iface
 
