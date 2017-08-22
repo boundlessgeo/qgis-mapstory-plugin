@@ -1,6 +1,6 @@
 bin
 *.pyc
-ext-libs
+extlibs
 mapstory.zip
 travis_secrets.tar.gz
 docs/build

@@ -4,7 +4,7 @@ import sys
 import os
 import site
 
-site.addsitedir(os.path.abspath(os.path.dirname(__file__) + '/ext-libs'))
+site.addsitedir(os.path.abspath(os.path.dirname(__file__) + '/extlibs'))
 
 def classFactory(iface):
     from mapstory.plugin import MapStoryPlugin

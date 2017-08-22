@@ -15,7 +15,7 @@ from paver.easy import *
 options(
     plugin = Bunch(
         name = 'mapstory',
-        ext_libs = path('mapstory/ext-libs'),
+        ext_libs = path('mapstory/extlibs'),
         ext_src = path('mapstory/ext-src'),
         source_dir = path('mapstory'),
         package_dir = path('.'),
