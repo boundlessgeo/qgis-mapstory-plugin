@@ -9,10 +9,11 @@ Welcome to QGIS MapStory Plugin's documentation!
 Contents:
 
 .. toctree::
+   :glob:
    :maxdepth: 2
 
    mapstory
-
+   *
 
 
 Indices and tables
